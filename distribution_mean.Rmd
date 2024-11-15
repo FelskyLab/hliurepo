@@ -1,0 +1,78 @@
+---
+title: Test File
+---
+
+```{r}
+# Load necessary libraries
+library(readr)
+library(ggplot2)
+```
+
+```{r}
+taxonomy <- 4
+file_name_vector <- c("./subset_tables/subset_table_phylum.tsv",
+                      "./subset_tables/subset_table_class.tsv",
+                      "./subset_tables/subset_table_order.tsv",
+                      "./subset_tables/subset_table_family.tsv",
+                      "./subset_tables/subset_table_genus.tsv",
+                      "./subset_tables/subset_table_species.tsv")
+file_name <- file_name_vector[taxonomy]
+```
+
+```{r}
+# Read the TSV file into R, skip the first row since it contains a description
+mydata <- read_tsv(file_name,
+                   skip = 1)
+
+# Calculate mean and variance for each row
+row_means <- apply(mydata[, -1], 1, mean)  # Assuming first column is row names
+row_variances <- apply(mydata[, -1], 1, var)
+
+```
+```{r}
+# Create a data frame to store the means and variances
+mean_variance_data <- data.frame(
+  Bacteria = mydata[[1]], # Assuming the first column contains bacteria names
+  Mean = row_means,
+  Variance = row_variances
+)
+```
+
+```{r}
+# Define the cutoff value for the mean
+cutoff <- 0.001
+
+# Filter the data to include only rows with Mean >= cutoff
+mean_variance_data_filtered <- subset(mean_variance_data, Mean >= cutoff)
+
+# Optional: Display the number of rows before and after filtering
+total_rows <- nrow(mean_variance_data)
+filtered_rows <- nrow(mean_variance_data_filtered)
+cat("Total rows before filtering:", total_rows, "\n")
+cat("Total rows after filtering:", filtered_rows, "\n")
+cat("Number of rows removed:", total_rows - filtered_rows, "\n")
+```
+
+```{r}
+# Plot the distribution of means
+ggplot(mean_variance_data_filtered, aes(x = Mean)) +
+  geom_histogram(binwidth = 0.005, fill = "blue", alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Distribution of Means", x = "Mean", y = "Frequency")
+```
+
+```{r}
+# Plot Variance against Mean on Logarithmic X-axis
+ggplot(mean_variance_data_filtered, aes(x = Mean, y = Variance)) +
+  geom_point(alpha = 0.6, color = "darkgreen") +
+  theme_minimal() +
+  labs(title = "Variance vs. Mean", x = "Mean (log scale)", y = "Variance") +
+  scale_x_log10() +
+  geom_smooth(method = "lm", se = FALSE, color = "red")  # Add a trend line
+```
+
+```{r}
+# calculate the covariance of the mean_variance_data_filtered
+
+
+```

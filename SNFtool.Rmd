@@ -1,0 +1,69 @@
+```{r}
+library(SNFtool)
+library(SNFtool)
+library(data.table)
+```
+
+```{r}
+taxonomy <- 1
+file_name_vector <- c("./subset_tables/subset_table_phylum.tsv",
+                      "./subset_tables/subset_table_class.tsv",
+                      "./subset_tables/subset_table_order.tsv",
+                      "./subset_tables/subset_table_family.tsv",
+                      "./subset_tables/subset_table_genus.tsv",
+                      "./subset_tables/subset_table_species.tsv")
+file_path <- file_name_vector[taxonomy]
+```
+
+
+```{r}
+# 1. Data Preparation
+
+# Read the TSV file, skipping the first descriptive title row
+mydata <- fread(file_path, header = TRUE, sep = "\t", skip = 1)
+print(dim(mydata))  # Expected: 39 rows x 9512 columns
+
+# Extract OTU IDs and OTU counts
+# First column: OTU IDs
+otu_ids <- mydata[[1]]
+# Remove the first column to get OTU counts
+otu_counts <- as.matrix(mydata[, -1])
+rownames(otu_counts) <- otu_ids  # Assign OTU IDs as row names
+sample_data <- t(otu_counts)  # Dimensions: 9511 samples x 39 OTUs
+sample_dataframe <- as.data.frame(sample_data)
+```
+
+now we get the sample_dataframe which is a dataframe with 9511 samples and 39 OTUs.
+The row names of the dataframe are the sample names and the column names are the OTU IDs.
+
+```{text}
+#------------------------------------------------------------
+library(readr)
+library(tibble)
+library(dplyr)
+
+metadata <- read_tsv("metadata.tsv")
+bacteria_data <- read_tsv("subset_table_class.tsv", skip = 1)
+bacteria_data <- t(bacteria_data)
+bacteria_data <- as.data.frame(bacteria_data)
+
+# Set the first row as column names
+colnames(bacteria_data) <- bacteria_data[1, ]
+bacteria_data <- bacteria_data[-1, ]
+
+# Add row names as 'sample_name' column
+bacteria_data <- rownames_to_column(bacteria_data, var = "sample_name")
+
+# ------------------------------------------------------------
+```
+
+```{r}
+# 2. SNF Analysis
+# only use the first subset_size samples for testing
+subset_size <- 100
+sample_dataframe_subset <- sample_dataframe[1:subset_size, ]
+
+dist1 <- as.matrix(dist(sample_dataframe_subset))
+W1 <- affinityMatrix(dist1, K = 20, sigma = 0.5)
+displayClustersWithHeatmap(W1, spectralClustering(W1, K = 3))
+```
