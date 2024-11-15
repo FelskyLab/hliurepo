@@ -12,7 +12,7 @@ library(pheatmap)
 library(umap)
 
 # 1. Data Preparation
-file_path <- "subset_tables/subset_table.tsv"
+file_path <- "subset_tables/subset_table.tsv" # note this is the phylum level
 
 # Read the TSV file, skipping the first descriptive title row
 # - header = TRUE: the first row after skipping is treated as header (sample names)

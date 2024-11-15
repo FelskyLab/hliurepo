@@ -1,3 +1,4 @@
 subset_tables/
 dataset/
 *.rds
+*.pdf

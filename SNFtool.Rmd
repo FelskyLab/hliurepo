@@ -5,7 +5,7 @@ library(data.table)
 ```
 
 ```{r}
-taxonomy <- 1
+taxonomy <- 6
 file_name_vector <- c("./subset_tables/subset_table_phylum.tsv",
                       "./subset_tables/subset_table_class.tsv",
                       "./subset_tables/subset_table_order.tsv",
@@ -64,6 +64,31 @@ subset_size <- 100
 sample_dataframe_subset <- sample_dataframe[1:subset_size, ]
 
 dist1 <- as.matrix(dist(sample_dataframe_subset))
-W1 <- affinityMatrix(dist1, K = 20, sigma = 0.5)
-displayClustersWithHeatmap(W1, spectralClustering(W1, K = 3))
+W <- affinityMatrix(dist1, K = 20, sigma = 0.5)
+displayClustersWithHeatmap(W, spectralClustering(W, K = 3))
 ```
+
+W1 = W
+W2 = W
+W3 = W
+W4 = W
+W5 = W
+W6 = W
+
+```{r}
+W <- SNF(list(W1, W2, W3, W4, W5, W6), 20, 20)
+displayClustersWithHeatmap(W, spectralClustering(W, K = 3))
+# Open a PDF device
+pdf("clustering_heatmap.pdf", width = 8, height = 6)
+
+# Perform spectral clustering
+clusters <- spectralClustering(W, K = 3)
+
+# Display clusters with heatmap
+displayClustersWithHeatmap(W, clusters)
+
+# Close the PDF device
+dev.off()
+```
+
+w1 = W
