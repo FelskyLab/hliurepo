@@ -51,5 +51,14 @@ W6 <- W_list[[6]]
 # Perform SNF on the list of W matrices
 W <- SNF(list(W1, W2, W3, W4, W5, W6), K = 20, t = 20)
 
+# open a PDF device
+pdf("clustering_heatmap.pdf", width = 8, height = 6)
+
+# Perform spectral clustering
+clusters <- spectralClustering(W, K = 3)
+
 # Display clusters with heatmap
-displayClustersWithHeatmap(W, spectralClustering(W, K = 3))
+dummy <- displayClustersWithHeatmap(W, clusters)
+
+# Close the PDF device
+dummy <- dev.off()

@@ -90,5 +90,3 @@ displayClustersWithHeatmap(W, clusters)
 # Close the PDF device
 dev.off()
 ```
-
-w1 = W
