@@ -23,11 +23,12 @@ dependencies:
   - r-clue # needed for cl-prediction in lecture 17
   - r-rocr # graph the ROC in lecutre 18
   - r-datasaurus # simpson's paradox
-  - r-snftool
-  - r-data.table
-  - r-matrix
-  - r-pheatmap
+  - r-snftool # used in SNFtool.R, SNFtool.Rmd
+  - r-data.table # used to read tsv file
+  - r-matrix 
+  - r-pheatmap 
   - r-umap
   - r-doparallel
   - r-foreach
-  - r-vscdebugger
+  - r-vscdebugger # used in .vsc.attach()
+  
