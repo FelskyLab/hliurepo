@@ -1,0 +1,33 @@
+name: analysis
+channels:
+  - conda-forge
+  - defaults
+  - tttpob
+dependencies:
+  - r-base
+  - radian
+  - r-languageserver
+  - r-tidyverse
+  - r-ggplot2
+  - r-readr # read csv used in American Gut
+  - r-psych # factor analysis in lecture 17
+  - r-mvn # multi-variate normality in lecture 12
+  - r-nortest # normality tests in lecture 11
+  - r-car # homoscedasticity in lecture 12
+  - r-caret # for machine learning # kNN, rf, svm lecture 16, createFold, trainControl
+  - r-pwr # power analysis # lecture 12
+  - r-boot # bootstrap # lecture 15
+  - r-ape # contains phylogenetic dataset, used in lecture 14 glm # muticolinarity
+  - r-perm # permutation tests lecture 15
+  - r-class # kNN lecture 16
+  - r-clue # needed for cl-prediction in lecture 17
+  - r-rocr # graph the ROC in lecutre 18
+  - r-datasaurus # simpson's paradox
+  - r-snftool
+  - r-data.table
+  - r-matrix
+  - r-pheatmap
+  - r-umap
+  - r-doparallel
+  - r-foreach
+  - r-vscdebugger
