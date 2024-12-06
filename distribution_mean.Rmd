@@ -63,7 +63,7 @@ ggplot(mean_variance_data_filtered, aes(x = Mean)) +
 
 ```{r}
 # Plot Variance against Mean on Logarithmic X-axis
-ggplot(mean_variance_data_filtered, aes(x = Mean, y = Variance)) +
+p <- ggplot(mean_variance_data_filtered, aes(x = Mean, y = Variance)) +
   geom_point(alpha = 0.6, color = "darkgreen") +
   theme_minimal() +
   labs(title = "Variance vs. Mean", x = "Mean (log scale)", y = "Variance") +
@@ -73,6 +73,13 @@ ggplot(mean_variance_data_filtered, aes(x = Mean, y = Variance)) +
 
 ```{r}
 # calculate the covariance of the mean_variance_data_filtered
-
-
+ggsave("variance_mean.pdf",
+       plot = p,
+       width = 15,
+       height = 8)
 ```
+
+
+copy datasets to scc
+scp -r /home/hongrui_liu/CAMH/American_Gut_R/subset_tables hliu@scclogin.camhres.ca:/nethome/kcni/hliu/projects/hliurepo
+

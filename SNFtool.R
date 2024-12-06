@@ -30,7 +30,7 @@ for (i in 1:taxonomy) {
   sample_dataframe <- as.data.frame(sample_data)
 
   # 2. SNF Analysis
-  subset_size <- 100
+  subset_size <- 1000
   sample_dataframe_subset <- sample_dataframe[1:subset_size, ]
 
   dist_matrix <- as.matrix(dist(sample_dataframe_subset))
@@ -52,10 +52,10 @@ W6 <- W_list[[6]]
 W <- SNF(list(W1, W2, W3, W4, W5, W6), K = 20, t = 20)
 
 # open a PDF device
-pdf("clustering_heatmap.pdf", width = 8, height = 6)
+pdf("clustering_heatmap.pdf", width = 80, height = 60)
 
 # Perform spectral clustering
-clusters <- spectralClustering(W, K = 3)
+clusters <- spectralClustering(W, K = 6)
 
 # Display clusters with heatmap
 dummy <- displayClustersWithHeatmap(W, clusters)

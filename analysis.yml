@@ -31,4 +31,5 @@ dependencies:
   - r-doparallel
   - r-foreach
   - r-vscdebugger # used in .vsc.attach()
+  - r-snow # used for parallel processing
   

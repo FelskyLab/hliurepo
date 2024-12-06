@@ -37,7 +37,7 @@ load_data_stacked <- function(file_path) {
 
 
 sample_dataframe <- load_data_stacked("subset_tables/subset_table_order.tsv")
-subset_size <- 50
+subset_size <- 1000
 
 # Step 2: Subset the first 50 samples and convert row names to 'Sample' column
 subset_df <- sample_dataframe[1:subset_size, ] %>%
@@ -124,10 +124,11 @@ subset_long <- subset_long %>%
 
 # Step 11: Create the stacked bar plot
 p <- ggplot(subset_long, aes(x = Sample, y = Abundance, fill = OTU)) +
-  geom_bar(stat = "identity") +
+  geom_bar(stat = "identity", width = 0.2) +
   theme_bw() +
   theme(
-    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+    axis.text.x = element_text(),
+    axis.ticks.x = element_blank(),
     axis.title.x = element_blank()
   ) +
   labs(
@@ -138,9 +139,10 @@ p <- ggplot(subset_long, aes(x = Sample, y = Abundance, fill = OTU)) +
   guides(fill = guide_legend(reverse = FALSE)) +
   # add the following line to make sure the factor levels
   # are ordered as expected
-  scale_x_discrete(limits = sample_order)
+  scale_x_discrete(limits = sample_order) +
+  coord_cartesian(clip = "off")  # Optional: Prevent clipping of axis elements
 # Step 11: Save the plot
 ggsave("stacked_bar_plot_top10_OTUs_ordered.pdf",
        plot = p,
-       width = 14,
+       width = 40,
        height = 8)

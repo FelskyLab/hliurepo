@@ -1,3 +1,70 @@
+# compute the similarity matrix using the euclidean distance
+# and the affinity matrix using the Gaussian kernel.
+
+# Load libraries
+library(proxy)
+library(SNFtool)
+library(data.table)
+library(pheatmap)
+
+# 1. Data Preparation
+file_path <- "subset_tables/subset_table.tsv"
+
+# Read the TSV file, skipping the first descriptive title row
+# - header = TRUE: the first row after skipping is treated as header
+cat("Reading data...\n")
+mydata <- fread(file_path, header = TRUE, sep = "\t", skip = 1)
+print(dim(mydata))  # Expected: 39 rows x 9512 columns
+
+# Extract OTU IDs and OTU counts
+otu_ids <- mydata[[1]]  # First column: OTU IDs
+otu_counts <- as.matrix(mydata[, -1])  # Remove the first column to get OTU counts # nolint
+rownames(otu_counts) <- otu_ids  # Assign OTU IDs as row names
+sample_data <- t(otu_counts)  # Dimensions: 9511 samples x 39 OTUs
+sample_dataframe <- as.data.frame(sample_data)
+sample_datarame <- apply(sample_dataframe, 2, as.numeric)
+print(dim(sample_dataframe))  # Expected: 9511 x 39
+
+# Visualize the uclidean distance matrix
+subset_size <- 100
+sample_dataframe_subset <- sample_dataframe[1:subset_size, ]
+dist_matrix <- as.matrix(dist(sample_dataframe_subset, method = "euclidean"))
+
+# transform Distances to Similarity Scores
+sigma <- 0.5
+similarity_matrix <- exp(-dist_matrix^2 / (2 * sigma^2))
+
+
+
+# # SMF matrix
+# W <- affinityMatrix(dist_matrix, K = 20, sigma = 0.5)
+# dim(W)  # Expected: subset_size x subset_size
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Cosine
 # -----------------------------------------------
 # Final R Script for Computing Patient Similarity Matrix
 # -----------------------------------------------
