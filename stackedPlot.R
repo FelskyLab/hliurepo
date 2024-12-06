@@ -103,7 +103,26 @@ subset_long <- subset_long %>%
     OTU = fct_reorder(OTU, Mean_Abundance, .desc = TRUE),
     OTU = fct_relevel(OTU, "Others", after = Inf)
   )
-# Step 10: Create the stacked bar plot
+
+# Step 10: Order Samples Based on Abundance of Top OTU
+# Step 10a: Identify the top OTU (the first in the top10_otus list)
+top_otu <- top10_otus[1]
+
+# Step 10b: Extract the abundance of the top OTU for each sample
+top_otu_abundance <- subset_long %>%
+  filter(OTU == top_otu) %>%          # Filter for the top OTU
+  select(Sample, Abundance)           # Select relevant columns
+
+# Step 10c: Order the samples based on the abundance of the top OTU, descending
+sample_order <- top_otu_abundance %>%
+  arrange(desc(Abundance)) %>%        # Sort by descending abundance
+  pull(Sample)                        # Extract the ordered sample names
+
+# Step 10d: Reorder the 'Sample' factor based on sample_order
+subset_long <- subset_long %>%
+  mutate(Sample = factor(Sample, levels = sample_order))
+
+# Step 11: Create the stacked bar plot
 p <- ggplot(subset_long, aes(x = Sample, y = Abundance, fill = OTU)) +
   geom_bar(stat = "identity") +
   theme_bw() +
@@ -116,8 +135,10 @@ p <- ggplot(subset_long, aes(x = Sample, y = Abundance, fill = OTU)) +
     fill = "OTU"
   ) +
   scale_fill_brewer(palette = "Set3") +
-  guides(fill = guide_legend(reverse = FALSE))
-
+  guides(fill = guide_legend(reverse = FALSE)) +
+  # add the following line to make sure the factor levels
+  # are ordered as expected
+  scale_x_discrete(limits = sample_order)
 # Step 11: Save the plot
 ggsave("stacked_bar_plot_top10_OTUs_ordered.pdf",
        plot = p,
