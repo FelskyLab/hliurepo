@@ -28,8 +28,13 @@ dependencies:
   - r-matrix 
   - r-pheatmap 
   - r-umap
-  - r-doparallel
+  - r-doparallel # used in my assignment9(pheatmap) and also lecture 24
   - r-foreach
   - r-vscdebugger # used in .vsc.attach()
   - r-snow # used for parallel processing
-  
+  - r-compositions # used for composition data with PCA for microbiome study
+  - r-metafor # meta-analysis workshop
+  - r-kableExtra # meta-analysis workshop
+  - r-foreach # used in lecture 24
+  - r-microbenchmark # used in lecture 24
+  - r-rcpp # used in lecture 24

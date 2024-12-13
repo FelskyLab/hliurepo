@@ -1,6 +1,6 @@
 library(data.table)
 library(ggplot2)
-# library(compositions)
+library(compositions)
 
 # the load_data function will only accept one argument as input. It then
 # does a similar dataprocessing step so it will return a dataframe. The
@@ -30,12 +30,12 @@ subset_size <- 1000
 subset_df <- sample_dataframe[1:subset_size, ]
 
 # Optional: Apply CLR transformation for compositional data
-# subset_clr <- clr(as.matrix(subset_df))
+subset_clr <- clr(as.matrix(subset_df))
 
 # Perform PCA
 pca_result <- prcomp(subset_df, center = TRUE, scale. = FALSE)
 # For CLR-transformed data:
-# pca_result <- prcomp(subset_clr, center = TRUE, scale. = TRUE)
+# pca_result <- prcomp(subset_clr, center = TRUE, scale. = FALSE)
 
 # Summary of PCA
 summary(pca_result)
