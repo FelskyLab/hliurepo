@@ -1,6 +1,7 @@
 name: analysis
 channels:
   - conda-forge
+  - bioconda
   - defaults
   - tttpob
 dependencies:
@@ -38,3 +39,8 @@ dependencies:
   - r-foreach # used in lecture 24
   - r-microbenchmark # used in lecture 24
   - r-rcpp # used in lecture 24
+  - bioconductor-dada2 # used in the ASV/OTU analysis for microbiome
+  - bioconductor-phyloseq # used in the ASV/OTU analysis for microbiome
+  - bioconductor-biostrings # used in DADA2 tutorial OTU tabel
+  - r-cca # used in canonical correspondence analysis
+  - r-ccp # test for canonical correspondence analysis

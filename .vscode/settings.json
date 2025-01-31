@@ -1,0 +1,6 @@
+{
+    "r.bracketedPaste": true,
+    "r.libPaths": [
+        "/home/hongrui_liu/miniconda/envs/analysis/lib/R/library"
+    ]
+}
