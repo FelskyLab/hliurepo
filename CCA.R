@@ -1,10 +1,7 @@
 #!/usr/bin/env Rscript
 
-########################################################################
 #  Example R Script: Loading, Filtering, Excluding Missing Y Data, 
 #                    and Running CCA
-########################################################################
-
 # 1) Load libraries
 library(data.table)
 library(CCA)
@@ -13,25 +10,23 @@ library(dplyr)
 
 # 2) Define your custom function to read and transpose OTU table
 load_data_stacked <- function(file_path) {
-  # Use fread from data.table (fast reading). Adjust skip if you have comment lines.
-  # The skip=1 below is because your OTU table might have 1 header line before columns.
+  # Use fread from data.table (fast reading). Adjust skip if you have comment
+  # lines.
+  # The skip=1 below is because your OTU table might have 1 header line before
+  # columns.
   mydata <- fread(file_path, header = TRUE, sep = "\t", skip = 1)
-
   cat("Original data dimensions: ", dim(mydata), "\n")
-  # e.g., "39 rows x 9512 columns" if you had 39 taxa and 9511 samples + 1 for OTU ID
-  
+  # e.g., "39 rows x 9512 columns" if you had 39 taxa and
+  # 9511 samples + 1 for OTU ID
   # First column = OTU IDs
   otu_ids <- mydata[[1]]
   # The rest of the columns = sample counts/abundances
   otu_counts <- as.matrix(mydata[, -1])
   rownames(otu_counts) <- otu_ids
-  
   # Transpose so rows = samples, columns = taxa
   sample_data <- t(otu_counts)
-  
   # Convert to data frame
   sample_dataframe <- as.data.frame(sample_data)
-
   return(sample_dataframe)
 }
 
@@ -85,34 +80,38 @@ metadata_clean <- metadata %>%
 cat("Metadata dimension after removing NA in BMI/age_years:", dim(metadata_clean), "\n")
 
 # Now we want to match sample IDs in 'sample_dataframe_filt' to 'metadata_clean'
-common_samples <- intersect(rownames(sample_dataframe_filt), rownames(metadata_clean))
+common_samples <- intersect(rownames(sample_dataframe_filt),
+                            rownames(metadata_clean))
 cat("Number of matching samples (after NA exclusion): ", length(common_samples), "\n")
 
 
 ### 9000 samples overlap between OTU and metadata ###
 
-
 # Subset both data frames to matching samples
 otu_final <- sample_dataframe_filt[common_samples, , drop=FALSE]
 metadata_final <- metadata_clean[common_samples, , drop=FALSE]
 
-########################################################################
-# 5) Prepare blocks for Canonical Correlation Analysis (CCA)
-########################################################################
 
+# 5) Prepare blocks for Canonical Correlation Analysis (CCA)
 # Suppose we want:
 #    X = microbiome features (columns in otu_final)
-#    Y = BMI + age_years
+#    Y = BMI + age_years (columns in metadata_final)
+
 X <- otu_final
 Y <- metadata_final[, c("bmi", "age_years")]
 
-# Optional: Scale (mean=0, sd=1)
-X_scaled <- scale(X, center = TRUE, scale = TRUE)
-Y_scaled <- scale(Y, center = TRUE, scale = TRUE)
+common_samples <- intersect(rownames(X), rownames(Y))
+common_samples_sorted <- sort(common_samples)
 
-########################################################################
+X_sub <- X[common_samples_sorted, , drop = FALSE]
+Y_sub <- Y[common_samples_sorted, , drop = FALSE]
+
+# Optional: Scale (mean=0, sd=1)
+X_scaled <- scale(X_sub, center = TRUE, scale = TRUE)
+Y_scaled <- scale(Y_sub, center = TRUE, scale = TRUE)
+
+
 # 6) Run CCA
-########################################################################
 
 res.cc <- cc(X_scaled, Y_scaled)
 
@@ -163,17 +162,39 @@ summary(model_simple)
 # 1) Create a basic scatter plot
 library(ggplot2)
 
-ggplot(df_model, aes(x = age_years, y = bifido_abundance)) +
-  geom_point(
-    shape = 16,  # small solid circle
-    size = 1,    # smaller point size
-    alpha = 0.8, # transparency for overlapping points
-    color = "blue"
-  ) +
-  geom_smooth(method = "lm", color = "red", se = TRUE) +
-  labs(
-    title = "Scatter Plot of Bifidobacteriales Abundance vs. Age",
-    x = "Age (years)",
-    y = "Bifidobacteriales Abundance"
-  ) +
-  theme_minimal()
+p1 <- ggplot(df_model, aes(x = age_years, y = bifido_abundance)) +
+        geom_point(
+          shape = 16,  # small solid circle
+          size = 1,    # smaller point size
+          alpha = 0.8, # transparency for overlapping points
+          color = "blue"
+        ) +
+        geom_smooth(method = "lm", color = "red", se = TRUE) +
+        labs(
+          title = "Scatter Plot of Bifidobacteriales Abundance vs. Age",
+          x = "Age (years)",
+          y = "Bifidobacteriales Abundance"
+        ) +
+        theme_minimal()
+
+ggsave("scatter_plot_bifido_age.pdf", plot = p1, width = 6, height = 4, dpi = 300)
+
+# Create a new column that is log-transformed
+df_model$log_bifido_abundance <- log1p(df_model$bifido_abundance)
+
+# Now fit the linear model using the transformed abundance
+model_simple_log <- lm(log_bifido_abundance ~ age_years, data = df_model)
+summary(model_simple_log)
+
+p2 <- ggplot(df_model, aes(x = age_years, y = bifido_abundance)) +
+        geom_point(size = 1, alpha = 0.8, shape = 16, color = "blue") +
+        geom_smooth(method = "lm", color = "red", se = TRUE) +
+        scale_y_log10() +
+        labs(
+          title = "Bifido Abundance vs. Age (log-scale y-axis)",
+          x = "Age (years)",
+          y = "Bifidobacteriales Abundance (log scale)"
+        ) +
+        theme_minimal()
+
+ggsave("scatter_plot_bifido_age_log.pdf", plot = p2, width = 6, height = 4, dpi = 300)
