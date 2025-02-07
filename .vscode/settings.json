@@ -2,5 +2,8 @@
     "r.bracketedPaste": true,
     "r.libPaths": [
         "/home/hongrui_liu/miniconda/envs/analysis/lib/R/library"
-    ]
+    ],
+    "r.useRenvLibPath": true,
+    "r.rpath.linux": "/home/hongrui_liu/miniconda/envs/analysis/bin/R",
+    "r.rterm.linux": "/home/hongrui_liu/miniconda/envs/analysis/bin/R",
 }
