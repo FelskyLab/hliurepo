@@ -45,13 +45,13 @@ cat("After transpose, dimension is: ", dim(sample_dataframe), "\n")
 # Filter out taxa with average abundance < 0.1% (0.001 in fractional form)
 threshold <- 0.01  # 1%
 col_means <- colMeans(sample_dataframe)
-sample_dataframe_filt <- sample_dataframe[, col_means >= threshold, drop = FALSE]
+sample_dataframe_filt <- sample_dataframe[,
+                                          col_means >= threshold,
+                                          drop = FALSE]
 
 cat("Dimension after filtering (< 0.1% avg): ", dim(sample_dataframe_filt), "\n")
 
-#################################################################
 # 4) Load metadata and exclude samples with missing BMI/age
-#################################################################
 
 # Suppose you have a metadata file with sample_name, BMI, age_years, etc.
 metadata_file <- "dataset/metadata.tsv"
@@ -127,27 +127,25 @@ print(head(res.cc$xcoef))
 cat("Y side coefficients:\n")
 print(res.cc$ycoef)
 
-########################################################################
-# 7) (Optional) Significance Testing
-########################################################################
 
+# 7) (Optional) Significance Testing
 # Using the CCP package to get approximate p-values
 p_values <- p.asym(res.cc$cor, nrow(X_scaled), ncol(X_scaled), ncol(Y_scaled))
 cat("CCA dimension significance:\n")
 print(p_values)
 
-########################################################################
-# 8) Next Steps
-########################################################################
 
-# - Interpret which taxa have the largest loadings in the first canonical dimension(s).
+# 8) Next Steps
+# - Interpret which taxa have the largest loadings in the first
+#   canonical dimension(s).
 # - Check which dimension is significant (p-value).
 # - Possibly refine the threshold for filtering or add more metadata variables.
 # - Explore partial correlation or partial least squares if needed.
 # - Visualize canonical variates if desired.
 
 # Extract the taxon abundance for Bifidobacteriales
-bifido_abundance <- otu_final[ , "k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Bifidobacteriales"]
+bifido_abundance <- otu_final[,
+                              "k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Bifidobacteriales"] #nolint
 df_model <- data.frame(
   age_years        = metadata_final$age_years,
   bmi              = metadata_final$bmi,
