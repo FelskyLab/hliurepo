@@ -72,51 +72,28 @@ p <- ggplot(pca_scores, aes(x = PC1, y = PC2, color = bmi_group)) +
 ggsave("PCA_CLR_bmi24.pdf", p, width = 6, height = 5)
 cat("PCA with BMI grouping (24) complete. Output: PCA_CLR_bmi24.pdf\n")
 
+# Extract loadings for each OTU
+pca_loadings <- as.data.frame(pca_res$rotation)
+pca_loadings$Taxonomy <- rownames(pca_loadings)  # keep the OTU IDs/labels
 
-# Extract loadings for each feature (OTU)
-pca_res_A <- pca_res
-pca_loadings <- as.data.frame(pca_res_A$rotation)
-pca_loadings$Feature <- rownames(pca_loadings)  # keep the OTU names in a column
+# Example only if you have a separate mapping
+# pca_loadings <- left_join(pca_loadings, taxonomy_map, by = "OTU")
 
-# Variation explained, for axis labels
-var_exp_A <- round(100 * pca_res_A$sdev^2 / sum(pca_res_A$sdev^2), 1)
-xlabA <- paste0("PC1 (", var_exp_A[1], "%)")
-ylabA <- paste0("PC2 (", var_exp_A[2], "%)")
-
-# Decide on a scale factor for the loadings arrows
-# A common quick approach is to pick a factor so that arrows
-# fit roughly within the sample cloud. You can tweak or compute it dynamically.
 scaleFactor <- 5
+pca_loadings$PC1_scaled <- pca_loadings$PC1 * scaleFactor
+pca_loadings$PC2_scaled <- pca_loadings$PC2 * scaleFactor
 
-# Create new columns for the scaled loadings
-pca_loadings$PC1_arrow <- pca_loadings$PC1 * scaleFactor
-pca_loadings$PC2_arrow <- pca_loadings$PC2 * scaleFactor
+# Variation explained (for axis labels)
+var_exp <- round(100 * pca_res$sdev^2 / sum(pca_res$sdev^2), 1)
+xlab <- paste0("PC1 (", var_exp[1], "%)")
+ylab <- paste0("PC2 (", var_exp[2], "%)")
 
-pca_scores_A <- pca_scores
-# Base plot using sample scores
-pBiplot <- ggplot(pca_scores_A, aes(x = PC1, y = PC2, color = bmi_group)) +
-  geom_point(size = 2) +
-  stat_ellipse(type = "norm", level = 0.75, size = 1) +
-  labs(title = "PCA Biplot (CLR) with OTU Loadings",
-       x = xlabA,
-       y = ylabA,
-       color = "Age Group") +
+p_tax_legend <- ggplot(pca_loadings, aes(x = PC1_scaled, y = PC2_scaled, color = Taxonomy)) +
+  geom_point(size = 3) +
+  labs(title = "PCA Loadings by Full Taxonomy (Legend)",
+       x = xlab,
+       y = ylab,
+       color = "Full Taxonomy") +
   theme_minimal()
 
-# Add loadings as arrows (geom_segment) + label them with geom_text
-pBiplot <- pBiplot +
-  geom_segment(data = pca_loadings,
-               aes(x = 0, y = 0,
-                   xend = PC1_arrow, yend = PC2_arrow),
-               arrow = arrow(length = unit(0.2, "cm")),
-               color = "black",
-               alpha = 0.7) +
-  geom_text(data = pca_loadings,
-            aes(x = PC1_arrow, y = PC2_arrow, label = Feature),
-            color = "black",
-            size = 3,
-            nudge_y = 0.0)
-
-# Print or save
-print(pBiplot)
-ggsave("PCA_Loadings_Biplot.pdf", pBiplot, width = 6, height = 5)
+ggsave("PCA_Loadings_FullTax_Legend.pdf", p_tax_legend, width = 8, height = 6)
