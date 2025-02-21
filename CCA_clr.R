@@ -33,7 +33,15 @@ otu_file <- "subset_tables/subset_table_order.tsv"
 sample_dataframe <- load_data_stacked(otu_file)
 cat("After transpose, dimension is: ", dim(sample_dataframe), "\n")
 
-sample_dataframe_filt <- sample_dataframe
+# 3.5) Filter out taxa with average abundance < 1% (0.001 in fractional form)
+# Filter out taxa with average abundance < 1% (0.01 in fractional form)
+threshold <- 0.01  # 1%
+col_means <- colMeans(sample_dataframe)
+sample_dataframe_filt <- sample_dataframe[,
+                                          col_means >= threshold,
+                                          drop = FALSE]
+
+cat("Dimension after filtering (< 1% avg): ", dim(sample_dataframe_filt), "\n")
 
 # 4) Load metadata and exclude samples with missing BMI/age
 metadata_file <- "dataset/metadata.tsv"
@@ -68,7 +76,7 @@ metadata_final <- metadata_final %>%
 
 # Step A1: Basic zero replacement (pseudocount) - you could also use zCompositions
 # If you have many zeros, consider a more refined approach (zCompositions, etc.)
-pseudocount_value <- 1
+pseudocount_value <- 1e-5
 otu_versionA <- otu_final + pseudocount_value
 
 # Step A2: Convert to 'acomp' class (compositions package expects that for clr())
