@@ -39,18 +39,18 @@ filter_low_abundance_taxa <- function(sample_df, threshold = 0.01) {
 # 2.2) Load metadata, filter out invalid numeric columns for continuous variables
 load_and_filter_metadata <- function(metadata_file, 
                                      sample_col_name = "sample_name",
-                                     continuous_cols = c("bmi", "age_years")) {
+                                     continuous_cols = c("bmi", "age_years", "height_cm", "weight_kg")) {
   meta <- fread(metadata_file, header = TRUE, sep = "\t") %>%
     as.data.frame()
-  
+
   # Make sure sample_col_name is present
   if (!sample_col_name %in% names(meta)) {
     stop("Metadata is missing the specified sample column: ", sample_col_name)
   }
-  
+
   # Set rownames to the sample identifier
   rownames(meta) <- meta[[sample_col_name]]
-  
+
   # Convert columns of interest to numeric, coerce invalid strings to NA
   for (col in continuous_cols) {
     if (col %in% colnames(meta)) {
@@ -59,13 +59,13 @@ load_and_filter_metadata <- function(metadata_file,
       warning("Column ", col, " not found in metadata; ignoring.")
     }
   }
-  
+
   # Filter out rows with NA in any of the requested continuous columns
   meta_clean <- meta %>%
     filter_at(vars(continuous_cols), all_vars(!is.na(.)))
-  
+
   cat("Metadata dimension after removing NA in", paste(continuous_cols, collapse=", "),
       ":", dim(meta_clean), "\n")
-  
+
   return(meta_clean)
 }

@@ -104,7 +104,7 @@ ylabA <- paste0("PC2 (", var_exp_A[2], "%)")
 
 # Step A5: Plot
 pA <- ggplot(pca_scores_A, aes(x = PC1, y = PC2, color = age_group)) +
-  geom_point(size = 2) +
+  geom_point(size = 0.1) +
   stat_ellipse(type = "norm", level = 0.75, size = 1) +
   labs(title = "PCA (CLR via compositions package)", 
        x = xlabA, 
