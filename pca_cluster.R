@@ -19,7 +19,10 @@ metadata_file <- "dataset/metadata.tsv"
 # e.g., we want 'bmi' and 'age_years' to be numeric and drop NA
 metadata_clean <- load_and_filter_metadata(metadata_file,
                                            sample_col_name = "sample_name",
-                                           continuous_cols = c("bmi", "age_years", "height_cm", "weight_kg"))
+                                           continuous_cols = c("bmi",
+                                                               "age_years",
+                                                               "height_cm",
+                                                               "weight_kg"))
 
 # 5) Match sample IDs between OTU table and metadata
 common_samples <- intersect(rownames(sample_dataframe_filt),
@@ -35,13 +38,14 @@ metadata_final <- metadata_clean[common_samples, , drop = FALSE]
 metadata_final <- metadata_final %>%
   mutate(height_group = ifelse(height_cm > 175, "Above175", "Below175"))
 
-# 4) (Optional) Add pseudocount and do CLR transform using compositions package
+# 4) Add pseudocount and do CLR transform using compositions package
+# This is a step that we need to review again later to decide for the best pseudocount value
 pseudocount_value <- 1e-5
 otu_version <- otu_final + pseudocount_value
 otu_acomp <- acomp(otu_version)
 clr_mat <- clr(otu_acomp)
 
-# 5) PCA
+# 5) PCA result (pcs_res)
 pca_res <- prcomp(clr_mat, center = FALSE, scale. = FALSE)
 
 # Extract PCA scores
@@ -74,21 +78,28 @@ p <- ggplot(pca_scores, aes(x = PC1, y = PC2, color = height_group)) +
 ggsave("PCA_CLR_height175.pdf", p, width = 6, height = 5)
 cat("PCA with hieght group 175 complete. Output: PCA_CLR_height175.pdf\n")
 
-p_smoking <- ggplot(pca_scores, aes(x = PC1, y = PC2, color = smoking_frequency)) +
+# Filter out "Not provided" entries and recode smoking responses
+pca_scores_filtered <- pca_scores %>%
+  filter(smoking_frequency != "Not provided") %>%
+  mutate(smoking_status = ifelse(smoking_frequency == "Never", "Never", "Smoking")) %>%
+  mutate(alcohol_status = ifelse(alcohol_frequency == "Never", "Never", "Alcohol"))
+
+# Plot PCA by the new smoking_status grouping
+p_smoking <- ggplot(pca_scores_filtered, aes(x = PC1, y = PC2, color = smoking_status)) +
   geom_point(size = 0.1) +
-  stat_ellipse(type = "norm", level = 0.75, size = 0.1) + 
-  labs(title = "PCA (CLR) by Smoking Frequency",
+  stat_ellipse(type = "norm", level = 0.75, size = 0.1) +
+  labs(title = "PCA (CLR) by Smoking Status",
        x = xlab,
        y = ylab,
-       color = "Smoking Frequency") +
+       color = "Smoking Status") +
   theme_minimal()
 
 ggsave("PCA_CLR_smoking_frequency.pdf", p_smoking, width = 6, height = 5)
 cat("PCA with smoking_frequency complete. Output: PCA_CLR_smoking_frequency.pdf\n")
 
-p_alcohol <- ggplot(pca_scores, aes(x = PC1, y = PC2, color = alcohol_frequency)) +
+p_alcohol <- ggplot(pca_scores_filtered, aes(x = PC1, y = PC2, color = alcohol_status)) +
   geom_point(size = 0.1) +
-  stat_ellipse(type = "norm", level = 0.75, size = 0.1) + 
+  stat_ellipse(type = "norm", level = 0.75, size = 0.1) +
   labs(title = "PCA (CLR) by Alcohol Frequency",
        x = xlab,
        y = ylab,
@@ -142,8 +153,6 @@ pca_scores$user_cluster <- factor(pca_scores$user_cluster, levels = c(1,2))
 
 library(ggplot2)
 
-
-
 ggplot(pca_scores, aes(x = PC1, y = PC2, color = user_cluster)) +
   geom_point(size = 2) +
   # (Optional) Add the centers themselves:
@@ -155,7 +164,7 @@ ggplot(pca_scores, aes(x = PC1, y = PC2, color = user_cluster)) +
   labs(title = "Nearest-Centroid Assignment to User-Defined Centers",
        color = "User Cluster") +
   scale_color_discrete()
-  theme_minimal()
+theme_minimal()
 
 # try ggpubr gg themes
 # gg sci
@@ -180,9 +189,56 @@ for (var in continuous_vars) {
 
   # e.g. a simple t-test
   t_out <- t.test(values_cluster1, values_cluster2)
-  
+
   cat("Variable:", var, "\n")
   cat("  Mean cluster1 =", mean(values_cluster1, na.rm = TRUE),
       ", Mean cluster2 =", mean(values_cluster2, na.rm = TRUE), "\n")
   cat("  t-test p-value =", t_out$p.value, "\n\n")
 }
+
+
+
+###### do the table of the relationship between pcs and metadata
+# First, add the metadata variables to the PCA scores data frame.
+# (Assuming these variables were cleaned in metadata_final.)
+pca_scores$bmi <- metadata_final[rownames(pca_scores), "bmi"]
+pca_scores$age_years <- metadata_final[rownames(pca_scores), "age_years"]
+pca_scores$height_cm <- metadata_final[rownames(pca_scores), "height_cm"]
+pca_scores$weight_kg <- metadata_final[rownames(pca_scores), "weight_kg"]
+
+# Load broom package for tidying model outputs
+library(broom)
+
+# Define which principal components to analyze (e.g., PC1 to PC5)
+pc_names <- grep("^PC", names(pca_scores), value = TRUE)[1:5]
+
+# Create an empty list to store results
+regression_results <- list()
+
+# Loop through each PC, fit a linear model with metadata variables, and store results
+for (pc in pc_names) {
+  # adjust the formula later
+  formula <- as.formula(paste(pc, "~ bmi + age_years + height_cm + weight_kg + smoking_frequency + alcohol_frequency"))
+
+  # Fit the linear model
+  fit <- lm(formula, data = pca_scores)
+
+  # Tidy up the results to extract beta and p-values for each predictor.
+  tidy_fit <- tidy(fit)
+
+  # Also extract the overall R-squared from the model summary.
+  r_squared <- summary(fit)$r.squared
+
+  # Add a column for the PC name and overall R-squared.
+  tidy_fit$PC <- pc
+  tidy_fit$R_squared <- r_squared
+
+  # Store the results
+  regression_results[[pc]] <- tidy_fit
+}
+
+# Combine all results into a single data frame
+regression_df <- do.call(rbind, regression_results)
+
+# View the results
+print(regression_df)

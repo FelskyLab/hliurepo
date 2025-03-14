@@ -37,9 +37,12 @@ filter_low_abundance_taxa <- function(sample_df, threshold = 0.01) {
 
 
 # 2.2) Load metadata, filter out invalid numeric columns for continuous variables
-load_and_filter_metadata <- function(metadata_file, 
+load_and_filter_metadata <- function(metadata_file,
                                      sample_col_name = "sample_name",
-                                     continuous_cols = c("bmi", "age_years", "height_cm", "weight_kg")) {
+                                     continuous_cols = c("bmi",
+                                                         "age_years",
+                                                         "height_cm",
+                                                         "weight_kg")) {
   meta <- fread(metadata_file, header = TRUE, sep = "\t") %>%
     as.data.frame()
 
@@ -64,7 +67,7 @@ load_and_filter_metadata <- function(metadata_file,
   meta_clean <- meta %>%
     filter_at(vars(continuous_cols), all_vars(!is.na(.)))
 
-  cat("Metadata dimension after removing NA in", paste(continuous_cols, collapse=", "),
+  cat("Metadata dimension after removing NA in", paste(continuous_cols, collapse=", "), #nolint
       ":", dim(meta_clean), "\n")
 
   return(meta_clean)
