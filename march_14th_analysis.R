@@ -203,3 +203,43 @@ for (pc in pc_names) {
 # Combine regression results into a single data frame and print
 regression_df <- do.call(rbind, regression_results)
 print(regression_df)
+
+
+# create a elbow plot
+# Create a data frame for the variance explained by each PC
+num_pcs <- length(pca_res$sdev)
+var_exp <- round(100 * pca_res$sdev^2 / sum(pca_res$sdev^2), 1)
+pc_df <- data.frame(PC = 1:num_pcs, VarianceExplained = var_exp)
+
+#22) ### Create an elbow plot using ggplot2
+p_elbow <- ggplot(pc_df, aes(x = PC, y = VarianceExplained)) +
+  geom_line(group = 1) +
+  geom_point(size = 2) +
+  labs(title = "PCA Elbow Plot",
+       x = "Principal Component",
+       y = "Variance Explained (%)") +
+  theme_minimal()
+
+# Save the elbow plot
+ggsave("PCA_Elbow_Plot.pdf", p_elbow, width = 6, height = 5)
+cat("PCA Elbow Plot complete. Output: PCA_Elbow_Plot.pdf\n")
+
+# 23) Geography separation: Plot PCA by country of birth
+# Merge country_of_birth from metadata into pca_scores
+pca_scores$country_of_birth <- metadata_final[rownames(pca_scores), "country_of_birth"]
+
+# Filter for the desired countries
+pca_scores_geo <- pca_scores %>% 
+  filter(country_of_birth %in% c("United States", "United Kingdom", "Australia"))
+
+p_geo <- ggplot(pca_scores_geo, aes(x = PC1, y = PC2, color = country_of_birth)) +
+  geom_point(size = 0.1) +
+  stat_ellipse(type = "norm", level = 0.75, size = 1) +
+  labs(title = "PCA (CLR) by Country of Birth",
+       x = xlab,
+       y = ylab,
+       color = "Country of Birth") +
+  theme_minimal()
+
+ggsave("PCA_CLR_country_of_birth.pdf", p_geo, width = 6, height = 5)
+cat("PCA with country of birth separation complete. Output: PCA_CLR_country_of_birth.pdf\n")

@@ -45,3 +45,5 @@ dependencies:
   - r-cca # used in canonical correspondence analysis
   - r-ccp # test for canonical correspondence analysis
   - r-compositions # used for clr transformation
+  - r-irkernel # used for jupyter notebook
+  - jupyter # used for jupyter notebook
